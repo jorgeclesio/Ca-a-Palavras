@@ -39,6 +39,14 @@
         .word-item.completed {
             font-weight: bold;
         }
+
+        .button-container {
+            margin-top: 20px;
+        }
+
+        button {
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -55,12 +63,22 @@
         </ul>
     </div>
 
+    <div class="button-container">
+        <button onclick="resetarJogo()">Resetar Jogo</button>
+        <button onclick="adicionarLetraCorreta()">Adicionar Letra Correta</button>
+    </div>
+
     <script>
         const palavras = [
             { palavra: "CARRO", dica: "Meio de transporte", preenchida: false, letraPreenchida: 0 },
             { palavra: "COMPUTADOR", dica: "Dispositivo eletrônico", preenchida: false, letraPreenchida: 0 },
             { palavra: "CACHORRO", dica: "Animal de estimação", preenchida: false, letraPreenchida: 0 },
-
+            { palavra: "TELEFONE", dica: "Meio de comunicação", preenchida: false, letraPreenchida: 0 },
+            { palavra: "ESCOLA", dica: "Instituição educacional", preenchida: false, letraPreenchida: 0 },
+            { palavra: "MONTANHA", dica: "Elevação natural da terra", preenchida: false, letraPreenchida: 0 },
+            { palavra: "VIOLINO", dica: "Instrumento musical", preenchida: false, letraPreenchida: 0 },
+            { palavra: "BICICLETA", dica: "Veículo de duas rodas", preenchida: false, letraPreenchida: 0 },
+            { palavra: "ABACAXI", dica: "Fruta tropical", preenchida: false, letraPreenchida: 0 },
             // Adicione mais palavras conforme necessário
         ];
 
@@ -125,7 +143,7 @@
                 return false;
             }
 
-            if (direcao === 'vertical' && posicaoI + palavra.palavra.length > grade.length) {
+            if (direcao === 'vertical' e posicaoI + palavra.palavra.length > grade.length) {
                 return false;
             }
 
@@ -203,6 +221,57 @@
             document.body.appendChild(dicaElement);
         }
 
+        function resetarJogo() {
+            // Remova as letras preenchidas e resete o estado do jogo
+            palavras.forEach(palavra => {
+                palavra.preenchida = false;
+                palavra.letraPreenchida = 0;
+            });
+
+            const cells = document.querySelectorAll(".crossword-cell");
+            cells.forEach(cell => {
+                cell.textContent = '';
+            });
+
+            const wordItems = document.querySelectorAll(".word-item");
+            wordItems.forEach(item => {
+                item.classList.remove("completed");
+            });
+
+            // Reinicie o cronômetro
+            tempoInicio = new Date();
+        }
+
+        function adicionarLetraCorreta() {
+            const palavraAtual = palavras.find(palavra => !palavra.preenchida);
+
+            if (palavraAtual) {
+                const cell = document.querySelector(`.crossword-row:nth-child(${palavraAtual.posicaoI + 1}) .crossword-cell:nth-child(${palavraAtual.posicaoJ + 1})`);
+
+                const letraCorreta = palavraAtual.palavra[palavraAtual.letraPreenchida];
+                cell.textContent = letraCorreta;
+                palavraAtual.letraPreenchida++;
+
+                if (palavraAtual.letraPreenchida === palavraAtual.palavra.length) {
+                    palavraAtual.preenchida = true;
+                    const palavraItem = document.getElementById(`word-item-${palavraAtual.palavra}`);
+                    palavraItem.classList.add("completed");
+
+                    const proximaPalavra = palavras.find(palavra => !palavra.preenchida);
+                    if (proximaPalavra) {
+                        exibirDica(proximaPalavra.dica);
+                    }
+                }
+
+                const todasPreenchidas = palavras.every(palavra => palavra.preenchida);
+                if (todasPreenchidas) {
+                    tempoFim = new Date();
+                    const tempoTotal = (tempoFim - tempoInicio) / 1000;
+                    alert(`Parabéns! Você completou o jogo em ${tempoTotal} segundos.`);
+                }
+            }
+        }
+
         function exibirListaPalavras() {
             const wordList = document.getElementById("word-list");
 
@@ -217,7 +286,7 @@
         }
 
         window.onload = function () {
-            criarTabuleiro(12, 10, palavras);
+            criarTabuleiro(5, 5, palavras);
             exibirDica(palavras[0].dica);
             exibirListaPalavras();
         };
