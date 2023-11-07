@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palavras Cruzadas</title>
+    <style>
+        /* Adicione estilos aqui, se desejar */
+        .crossword-container {
+            display: flex;
+        }
+
+        .crossword-grid {
+            margin-right: 20px;
+        }
+
+        .crossword-row {
+            display: flex;
+        }
+
+        .crossword-cell {
+            border: 1px solid #000;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            cursor: pointer;
+        }
+
+        .word-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .word-item {
+            margin-bottom: 5px;
+        }
+
+        .word-item.completed {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Palavras Cruzadas</h1>
+
+    <div class="crossword-container">
+        <div class="crossword-grid" id="crossword-container">
+            <!-- O tabuleiro do jogo será criado dinamicamente aqui -->
+        </div>
+
+        <ul class="word-list" id="word-list">
+            <!-- A lista de palavras será gerada dinamicamente aqui -->
+        </ul>
+    </div>
+
+    <script>
+        const palavras = [
+            { palavra: "CARRO", dica: "Meio de transporte", preenchida: false, letraPreenchida: 0 },
+            { palavra: "COMPUTADOR", dica: "Dispositivo eletrônico", preenchida: false, letraPreenchida: 0 },
+            { palavra: "CACHORRO", dica: "Animal de estimação", preenchida: false, letraPreenchida: 0 },
+
+            // Adicione mais palavras conforme necessário
+        ];
+
+        let tempoInicio;
+        let tempoFim;
+
+        function criarTabuleiro(numLinhas, numColunas, listaPalavras) {
+            const crosswordContainer = document.getElementById("crossword-container");
+            const grade = criarGradeVazia(numLinhas, numColunas);
+
+            distribuirPalavras(grade, listaPalavras);
+            preencherLacunas(grade);
+
+            for (let i = 0; i < grade.length; i++) {
+                const row = document.createElement("div");
+                row.className = "crossword-row";
+
+                for (let j = 0; j < grade[i].length; j++) {
+                    const cell = document.createElement("div");
+                    cell.className = "crossword-cell";
+                    cell.textContent = grade[i][j];
+
+                    cell.addEventListener("click", function() {
+                        preencherPalavra(i, j);
+                    });
+
+                    row.appendChild(cell);
+                }
+
+                crosswordContainer.appendChild(row);
+            }
+
+            // Inicie o cronômetro
+            tempoInicio = new Date();
+        }
+
+        function criarGradeVazia(numLinhas, numColunas) {
+            return Array.from({ length: numLinhas }, () => Array(numColunas).fill(' '));
+        }
+
+        function distribuirPalavras(grade, listaPalavras) {
+            listaPalavras.forEach(palavra => {
+                let direcao, posicaoI, posicaoJ;
+
+                do {
+                    direcao = Math.random() < 0.5 ? 'horizontal' : 'vertical';
+                    posicaoI = Math.floor(Math.random() * grade.length);
+                    posicaoJ = Math.floor(Math.random() * grade[0].length);
+                } while (!verificarEspaco(grade, posicaoI, posicaoJ, palavra, direcao));
+
+                for (let k = 0; k < palavra.palavra.length; k++) {
+                    const indexI = direcao === 'horizontal' ? posicaoI : posicaoI + k;
+                    const indexJ = direcao === 'horizontal' ? posicaoJ + k : posicaoJ;
+
+                    grade[indexI][indexJ] = '';
+                }
+            });
+        }
+
+        function verificarEspaco(grade, posicaoI, posicaoJ, palavra, direcao) {
+            if (direcao === 'horizontal' && posicaoJ + palavra.palavra.length > grade[0].length) {
+                return false;
+            }
+
+            if (direcao === 'vertical' && posicaoI + palavra.palavra.length > grade.length) {
+                return false;
+            }
+
+            for (let k = 0; k < palavra.palavra.length; k++) {
+                const indexI = direcao === 'horizontal' ? posicaoI : posicaoI + k;
+                const indexJ = direcao === 'horizontal' ? posicaoJ + k : posicaoJ;
+
+                if (grade[indexI][indexJ] !== ' ') {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function preencherLacunas(grade) {
+            for (let i = 0; i < grade.length; i++) {
+                for (let j = 0; j < grade[i].length; j++) {
+                    if (grade[i][j] === ' ') {
+                        grade[i][j] = gerarLetraAleatoria();
+                    }
+                }
+            }
+        }
+
+        function gerarLetraAleatoria() {
+            const alfabeto = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const indiceAleatorio = Math.floor(Math.random() * alfabeto.length);
+            return alfabeto[indiceAleatorio];
+        }
+
+        function preencherPalavra(i, j) {
+            const palavraAtual = palavras.find(palavra => !palavra.preenchida);
+
+            if (palavraAtual) {
+                const letra = prompt("Digite a letra:").toUpperCase();
+
+                if (letra && letra.length === 1) {
+                    const cell = document.querySelector(`.crossword-row:nth-child(${i + 1}) .crossword-cell:nth-child(${j + 1})`);
+
+                    // Verifique se a letra digitada está correta
+                    if (letra === palavraAtual.palavra[palavraAtual.letraPreenchida]) {
+                        cell.textContent = letra;
+                        palavraAtual.letraPreenchida++;
+
+                        if (palavraAtual.letraPreenchida === palavraAtual.palavra.length) {
+                            palavraAtual.preenchida = true;
+                            const palavraItem = document.getElementById(`word-item-${palavraAtual.palavra}`);
+                            palavraItem.classList.add("completed");
+
+                            const proximaPalavra = palavras.find(palavra => !palavra.preenchida);
+                            if (proximaPalavra) {
+                                exibirDica(proximaPalavra.dica);
+                            }
+                        }
+
+                        const todasPreenchidas = palavras.every(palavra => palavra.preenchida);
+                        if (todasPreenchidas) {
+                            tempoFim = new Date();
+                            const tempoTotal = (tempoFim - tempoInicio) / 1000;
+                            alert(`Parabéns! Você completou o jogo em ${tempoTotal} segundos.`);
+                        }
+                    } else {
+                        alert("Letra incorreta. Tente novamente.");
+                    }
+                } else {
+                    alert("Por favor, digite uma letra válida.");
+                }
+            }
+        }
+
+        function exibirDica(dica) {
+            const dicaElement = document.createElement("p");
+            dicaElement.textContent = `Dica: ${dica}`;
+            document.body.appendChild(dicaElement);
+        }
+
+        function exibirListaPalavras() {
+            const wordList = document.getElementById("word-list");
+
+            palavras.forEach(palavra => {
+                const wordItem = document.createElement("li");
+                wordItem.id = `word-item-${palavra.palavra}`;
+                wordItem.textContent = palavra.palavra + " - " + palavra.dica;
+                wordItem.className = "word-item";
+
+                wordList.appendChild(wordItem);
+            });
+        }
+
+        window.onload = function () {
+            criarTabuleiro(12, 10, palavras);
+            exibirDica(palavras[0].dica);
+            exibirListaPalavras();
+        };
+    </script>
+
+</body>
+</html>
