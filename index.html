@@ -129,6 +129,9 @@
                     posicaoJ = Math.floor(Math.random() * grade[0].length);
                 } while (!verificarEspaco(grade, posicaoI, posicaoJ, palavra, direcao));
 
+                palavra.posicaoI = posicaoI;
+                palavra.posicaoJ = posicaoJ;
+
                 for (let k = 0; k < palavra.palavra.length; k++) {
                     const indexI = direcao === 'horizontal' ? posicaoI : posicaoI + k;
                     const indexJ = direcao === 'horizontal' ? posicaoJ + k : posicaoJ;
@@ -143,7 +146,7 @@
                 return false;
             }
 
-            if (direcao === 'vertical' e posicaoI + palavra.palavra.length > grade.length) {
+            if (direcao === 'vertical' && posicaoI + palavra.palavra.length > grade.length) {
                 return false;
             }
 
@@ -286,7 +289,7 @@
         }
 
         window.onload = function () {
-            criarTabuleiro(5, 5, palavras);
+            criarTabuleiro(15, 15, palavras);
             exibirDica(palavras[0].dica);
             exibirListaPalavras();
         };
