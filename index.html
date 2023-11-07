@@ -224,26 +224,36 @@
             document.body.appendChild(dicaElement);
         }
 
-        function resetarJogo() {
-            // Remova as letras preenchidas e resete o estado do jogo
-            palavras.forEach(palavra => {
-                palavra.preenchida = false;
-                palavra.letraPreenchida = 0;
-            });
+function resetarJogo() {
+    // Remova as letras preenchidas e resete o estado das palavras
+    palavras.forEach(palavra => {
+        palavra.preenchida = false;
+        palavra.letraPreenchida = 0;
+    });
 
-            const cells = document.querySelectorAll(".crossword-cell");
-            cells.forEach(cell => {
-                cell.textContent = '';
-            });
+    const wordItems = document.querySelectorAll(".word-item");
+    wordItems.forEach(item => {
+        item.classList.remove("completed");
+    });
 
-            const wordItems = document.querySelectorAll(".word-item");
-            wordItems.forEach(item => {
-                item.classList.remove("completed");
-            });
+    const cells = document.querySelectorAll(".crossword-cell");
+    cells.forEach(cell => {
+        // Verifique se a célula faz parte de uma palavra e resete apenas essas células
+        const i = parseInt(cell.parentElement.dataset.row) - 1;
+        const j = parseInt(cell.dataset.col) - 1;
+        const palavraCorrespondente = palavras.find(palavra =>
+            (palavra.posicaoI === i && palavra.posicaoJ <= j && j < palavra.posicaoJ + palavra.palavra.length && palavra.direcao === 'horizontal') ||
+            (palavra.posicaoJ === j && palavra.posicaoI <= i && i < palavra.posicaoI + palavra.palavra.length && palavra.direcao === 'vertical')
+        );
 
-            // Reinicie o cronômetro
-            tempoInicio = new Date();
+        if (palavraCorrespondente) {
+            cell.textContent = '';
         }
+    });
+
+    // Reinicie o cronômetro
+    tempoInicio = new Date();
+}
 
         function adicionarLetraCorreta() {
             const palavraAtual = palavras.find(palavra => !palavra.preenchida);
